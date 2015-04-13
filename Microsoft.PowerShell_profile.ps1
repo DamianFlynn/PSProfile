@@ -1,4 +1,10 @@
-﻿#Global Variables
+﻿## GLOBAL VARIABLES ############################################################
+
+$ProfilePath = $PROFILE.Substring(0,$PROFILE.IndexOf('\Microsoft.'))
+if (! ( [Environment]::GetEnvironmentVariable("PSModulePath", "User") ) ) {
+   [Environment]::SetEnvironmentVariable("PSModulePath", $ProfilePath + "\Modules", "User")
+}
+
 $ProfileSettingsPath = $PROFILE.Substring(0,$PROFILE.IndexOf('\Microsoft.')) + "\settings"
 $ProfileTranscriptsPath = $PROFILE.Substring(0,$PROFILE.IndexOf('\Microsoft.')) + "\transcripts"
 
