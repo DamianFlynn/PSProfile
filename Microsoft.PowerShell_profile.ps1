@@ -104,6 +104,7 @@ function Set-WindowWidth([int]$preferredWidth)
 
 }
 
+
 function Write-ColorOutput
 {
 	param (
