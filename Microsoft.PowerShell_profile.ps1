@@ -123,6 +123,43 @@ function Write-ColorOutput
     $host.UI.RawUI.ForegroundColor = $currentForegroundColor
 }
 
+## REMOTE POWERSHELL SESSIONS #################################################
+
+Function Connect-PSSession {
+	param (
+		[string]$ServerList,
+		[string]$PSURI,
+		[String]$ConfigurationName
+	)
+	
+	process {
+		$ServerList = ( $ServerList ).Split(",;")
+		For ( $i = 0 ; -not $ServerSession -and $i -lt $ServerList.Count ; $i++ )
+		{
+			$ServerSession = New-PSSession  -ConnectionURI     "http://$($ServerList[$i])/$PSURI" `
+										-ConfigurationName $ConfigurationName `
+										-ErrorAction       Continue
+		}
+		If ( -not $ServerSession ) {
+			throw "Could not connect a new PSSession to any $PSURI servers."
+		} else {
+			#  Importing PSSession with Exchange server to use Exchange server commands
+			$Import = Import-PSSession -Session $ServerSession -AllowClobber -Verbose:$False
+		}
+		
+		return $Import
+	}
+}
+	
+$ExchangeServerList = "bil-exc10-02.corpnet.liox.org;bil-exc10-03.corpnet.liox.org"
+$SkypeServerList = "bil-exc10-02.corpnet.liox.org;bil-exc10-03.corpnet.liox.org"
+
+#Import-Module ActiveDirectory
+#	
+#Connect-PSSession -ServerList $SkypeServerList -PSURI "OcsPowershell/" -ConfigurationName "Microsoft.Lync"
+#Connect-PSSession -ServerList $ExchangeServerList -PSURI "powershell/" -ConfigurationName "Microsoft.Exchange"
+	
+
 ## AZURE CONNECTIONS ##########################################################
 
 Function Connect-MSOL
