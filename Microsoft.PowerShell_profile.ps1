@@ -59,7 +59,15 @@ function Save-Transcript {
 
 ## SUPPORT FUNCTIONS ##########################################################
 
+function Check-LocalVersion
+{
+    $gitLocalRev = git rev-parse HEAD
+    $gitLocalBranch = (git symbolic-ref -q HEAD).Replace("refs/heads/","")
+    $gitRemoteRev = git rev-parse --verify --quite "@{upstream}"
+    $gitDifferences = git rev-list --left-right "@{upstream}"...HEAD
 
+    Write-Host ("Running $($GitStatus.Branch) branch")
+}
 
 function elevate-process
 {
