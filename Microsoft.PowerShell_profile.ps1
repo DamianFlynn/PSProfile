@@ -18,21 +18,20 @@ function Load-myCredentials {
 		mkdir $ProfileSettingsPath | out-null
 	}	
 
-	If (!(test-path $ProfileSettingsPath\ps_creds_LIOX_O365.xml)) {
-		write-output "Please provide your Lionbridge Office 365 Credentials"
-		Get-Credential dpfadmin@lionbridge.onmicrosoft.com | Export-Clixml $ProfileSettingsPath\ps_creds_LIOX_O365.xml
-		$global:MSOLCredsLIOX = Import-Clixml $ProfileSettingsPath\ps_creds_LIOX_O365.xml
-	} else {
-		$global:MSOLCredsLIOX = Import-Clixml $ProfileSettingsPath\ps_creds_LIOX_O365.xml
+	If (!(test-path $ProfileSettingsPath\ps_creds_O365.xml)) {
+		write-output "Please provide your Office 365 Credentials"
+		Get-Credential dpfadmin@lionbridge.onmicrosoft.com | Export-Clixml $ProfileSettingsPath\ps_creds_O365.xml
 	}
+	$CredsXML = Import-Clixml $ProfileSettingsPath\ps_creds_O365.xml
+	$global:MSOLCreds = new-object -typename System.Management.Automation.PSCredential -argumentlist $CredsXML.UserName,$CredsXML.Password
+	
 
-	If (!(test-path $ProfileSettingsPath\ps_creds_LIOX_OnPrem.xml)) {
-		Write-Output "Please provide your Lionbridge Administrator Credentials"
-		Get-Credential dpfadmin@lionbridge.com | Export-Clixml $ProfileSettingsPath\ps_creds_LIOX_OnPrem.xml
-		$global:OnPremCredsLIOX = Import-Clixml $ProfileSettingsPath\ps_creds_LIOX_OnPrem.xml
-	} else {
-		$global:OnPremCredsLIOX = Import-Clixml $ProfileSettingsPath\ps_creds_LIOX_OnPrem.xml
+	If (!(test-path $ProfileSettingsPath\ps_creds_OnPrem.xml)) {
+		Write-Output "Please provide your On-Premise Administrator Credentials"
+		Get-Credential dpfadmin@lionbridge.com | Export-Clixml $ProfileSettingsPath\ps_creds_OnPrem.xml
 	}
+	$CredsXML = Import-Clixml $ProfileSettingsPath\ps_creds_OnPrem.xml
+	$global:OnPremCreds = new-object -typename System.Management.Automation.PSCredential -argumentlist $CredsXML.UserName,$CredsXML.Password
 }
 
 ## HISTORY ####################################################################
@@ -137,7 +136,9 @@ Function Connect-PSSession {
 		$ServerList = ( $ServerList ).Split(",;")
 		For ( $i = 0 ; -not $ServerSession -and $i -lt $ServerList.Count ; $i++ )
 		{
-			$ServerSession = New-PSSession  -ConnectionURI     "http://$($ServerList[$i])/$PSURI" `
+			$targetServer = $ServerList[$i] 
+			write-verbose ("Attempting to connect to server $targetServer");
+			$ServerSession = New-PSSession  -ConnectionURI     "http://$targetServer/$PSURI" `
 										-ConfigurationName $ConfigurationName `
 										-ErrorAction       Continue
 		}
@@ -158,8 +159,8 @@ $SkypeServerList = "bil-exc10-02.corpnet.liox.org;bil-exc10-03.corpnet.liox.org"
 #Import-Module ActiveDirectory
 #	
 #Connect-PSSession -ServerList $SkypeServerList -PSURI "OcsPowershell/" -ConfigurationName "Microsoft.Lync"
-#Connect-PSSession -ServerList $ExchangeServerList -PSURI "powershell/" -ConfigurationName "Microsoft.Exchange"
-	
+#Connect-PSSession -ServerList $ExchangeServerList -PSURI "powershell/" -ConfigurationName "Microsoft.Exchange" -verbose
+#Set-Item -Path WSMan:\localhost\Client\TrustedHosts -Value "Computer1,Computer2"
 
 ## AZURE CONNECTIONS ##########################################################
 
@@ -180,7 +181,7 @@ Function Connect-EOL
 {
 	$global:SessionEOL = New-PSSession -ConfigurationName Microsoft.Exchange `
 							 -ConnectionUri "https://outlook.office365.com/powershell-liveid/" `
-							 -Credential $MSOLCredsLIOX `
+							 -Credential $MSOLCreds `
 							 -Authentication Basic `
 							 -AllowRedirection
     
