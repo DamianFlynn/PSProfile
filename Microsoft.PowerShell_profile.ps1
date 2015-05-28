@@ -166,10 +166,9 @@ $SkypeServerList = "bil-exc10-02.corpnet.liox.org;bil-exc10-03.corpnet.liox.org"
 
 Function Connect-MSOL
 {
-
     Try
     {
-        Connect-MsolService -Credential $global:MSOLCredsLIOX
+        Connect-MsolService -Credential $global:MSOLCreds
     }
     Catch
     {
