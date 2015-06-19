@@ -20,7 +20,7 @@
                    </TableColumnHeader>
                     <TableColumnHeader>
                         <Label>LastWriteTime</Label>
-                        <Width>20</Width>
+                        <Width>22</Width>
                         <Alignment>right</Alignment>
                     </TableColumnHeader>
                     <TableColumnHeader>
