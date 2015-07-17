@@ -57,6 +57,66 @@ function Save-Transcript {
 
 
 
+function Install-MSOnlineModules {
+
+    # Check if the Modules are Currently Installed
+    $Installed = Get-WmiObject -class Win32_Product | sort-object name | select name, version, vendor
+
+    # Microsoft Online Services (Sign-In Assistant)
+    if ($Installed.Name -notcontains "Microsoft Online Services Sign-in Assistant") {
+        
+        #  Not Installed - Check we have the Installers Locally..
+        $DownloadUrl = "http://download.microsoft.com/download/5/0/1/5017D39B-8E29-48C8-91A8-8D0E4968E6D4/en/msoidcli_64.msi"
+        $destination = "$($env:Home)\Documents\WindowsPowerShell\Installs\MSOnline"
+
+        if (!(Test-Path "$destination\msoidcli_64.msi")) {
+            #  Not Currently Local - Download the modules
+            Write-Output "Downloading: Microsoft Online Services Module"
+            if (!(Test-Path "$destination")) {mkdir $destination }
+            Start-BitsTransfer -Source $DownloadUrl -Description "Microsoft Online services" -Destination $destination -DisplayName "Microsoft Online Services"
+        }
+        Write-Output "Installing: Microsoft Online Services Module"
+        Start-Process -FilePath msiexec.exe -ArgumentList "/i $destination\$(Split-Path $DownloadUrl -Leaf) /quiet /passive"
+    } 
+
+
+    # Azure Active Directory
+    if ($Installed.Name -notcontains "Windows Azure Active Directory Module for Windows PowerShell") {
+        
+        #  Not Installed - Check we have the Installers Locally..
+        $DownloadUrl = "http://go.microsoft.com/fwlink/p/?linkid=236297"
+        $destination = "$($env:Home)\Documents\WindowsPowerShell\Installs\AzureAD"
+
+        if (!(Test-Path "$destination\AdministrationConfig-en.msi")) {
+            #  Not Currently Local - Download the modules
+            Write-Output "Downloading: Windows Azure Active Directory Module"
+            if (!(Test-Path "$destination")) {mkdir $destination }
+            Start-BitsTransfer -Source $DownloadUrl -Description "Microsoft Online services" -Destination $destination -DisplayName "Windows Azure Active Directory"
+        }
+        Write-Output "Installing: Windows Azure Active Directory Module"
+        Start-Process -FilePath msiexec.exe -ArgumentList "/i $destination\$(Split-Path $DownloadUrl -Leaf) /quiet /passive"
+    }
+
+
+    # Azure PowerShell
+    if ($Installed.Name -notcontains "Microsoft Azure PowerShell") {
+
+        #  Not Installed - Check we have the Installers Locally..
+        $DownloadURL = 'https://github.com/Azure/azure-powershell/releases/download/0.9.4-June2015/azure-powershell.0.9.4.msi'
+        $destination = "$($env:Home)\Documents\WindowsPowerShell\Installs\Azure"
+
+        if (!(Test-Path "$destination\azure-powershell.0.9.4.msi")) {
+            #  Not Currently Local - Download the modules
+            Write-Output "Downloading: Windows Azure Active Directory Module"
+            if (!(Test-Path "$destination")) {mkdir $destination }
+            Start-BitsTransfer -Source $DownloadURL -Description "Windows Azure Powershell" -Destination $destination -DisplayName "Windows Azure PowerShell"
+        }
+        Write-Output "Installing: Windows Azure Active Directory Module"
+        Start-Process -FilePath msiexec.exe -ArgumentList "/i $destination\$(Split-Path $DownloadUrl -Leaf) /quiet /passive"
+    }
+   
+}
+
 ## SUPPORT FUNCTIONS ##########################################################
 
 function Check-LocalVersion
