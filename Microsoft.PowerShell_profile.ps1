@@ -76,7 +76,7 @@ function Install-MSOnlineModules {
             Start-BitsTransfer -Source $DownloadUrl -Description "Microsoft Online services" -Destination $destination -DisplayName "Microsoft Online Services"
         }
         Write-Output "Installing: Microsoft Online Services Module"
-        Start-Process -FilePath msiexec.exe -ArgumentList "/i $destination\$(Split-Path $DownloadUrl -Leaf) /quiet /passive"
+        Start-Process -Wait -FilePath msiexec.exe -ArgumentList "/i $destination\$(Split-Path $DownloadUrl -Leaf) /quiet /passive"
     } 
 
 
@@ -94,12 +94,12 @@ function Install-MSOnlineModules {
             Start-BitsTransfer -Source $DownloadUrl -Description "Microsoft Online services" -Destination $destination -DisplayName "Windows Azure Active Directory"
         }
         Write-Output "Installing: Windows Azure Active Directory Module"
-        Start-Process -FilePath msiexec.exe -ArgumentList "/i $destination\$(Split-Path $DownloadUrl -Leaf) /quiet /passive"
+        Start-Process -Wait -FilePath msiexec.exe -ArgumentList "/i $destination\$(Split-Path $DownloadUrl -Leaf) /quiet /passive"
     }
 
 
     # Azure PowerShell
-    if ($Installed.Name -notcontains "Microsoft Azure PowerShell") {
+    if ($Installed.Name -notcontains "*Microsoft Azure PowerShell*" ) { 
 
         #  Not Installed - Check we have the Installers Locally..
         $DownloadURL = 'https://github.com/Azure/azure-powershell/releases/download/0.9.4-June2015/azure-powershell.0.9.4.msi'
@@ -107,12 +107,12 @@ function Install-MSOnlineModules {
 
         if (!(Test-Path "$destination\azure-powershell.0.9.4.msi")) {
             #  Not Currently Local - Download the modules
-            Write-Output "Downloading: Windows Azure Active Directory Module"
+            Write-Output "Downloading: Windows Azure PowerShell Module"
             if (!(Test-Path "$destination")) {mkdir $destination }
             Start-BitsTransfer -Source $DownloadURL -Description "Windows Azure Powershell" -Destination $destination -DisplayName "Windows Azure PowerShell"
         }
-        Write-Output "Installing: Windows Azure Active Directory Module"
-        Start-Process -FilePath msiexec.exe -ArgumentList "/i $destination\$(Split-Path $DownloadUrl -Leaf) /quiet /passive"
+        Write-Output "Installing: Windows Azure PowerShell Module"
+        Start-Process -Wait -FilePath msiexec.exe -ArgumentList "/i $destination\$(Split-Path $DownloadUrl -Leaf) /quiet /passive"
     }
    
 }
