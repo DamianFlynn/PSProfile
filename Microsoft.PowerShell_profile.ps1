@@ -12,11 +12,11 @@ $ProfileTranscriptsPath = $PROFILE.Substring(0,$PROFILE.IndexOf('\Microsoft.')) 
 
 function Load-myCredentials {
 	#Enable Profile Settings Folder
-	
+
 	if (!(test-path $ProfileSettingsPath)) {
 		write-output ("Create folders to store settings to")
 		mkdir $ProfileSettingsPath | out-null
-	}	
+	}
 
 	If (!(test-path $ProfileSettingsPath\ps_creds_O365.xml)) {
 		write-output "Please provide your Office 365 Credentials"
@@ -24,7 +24,7 @@ function Load-myCredentials {
 	}
 	$CredsXML = Import-Clixml $ProfileSettingsPath\ps_creds_O365.xml
 	$global:MSOLCreds = new-object -typename System.Management.Automation.PSCredential -argumentlist $CredsXML.UserName,$CredsXML.Password
-	
+
 
 	If (!(test-path $ProfileSettingsPath\ps_creds_OnPrem.xml)) {
 		Write-Output "Please provide your On-Premise Administrator Credentials"
@@ -48,8 +48,8 @@ function Save-Transcript {
 		write-output ("Create folders to store transcripts to")
 		mkdir $ProfileTranscriptsPath | out-null
 	}
-	
-	$global:TRANSCRIPT = "$ProfileTranscriptsPath\PSLOG_{0:dd-MM-yyyy}.txt" -f (Get-Date)	
+
+	$global:TRANSCRIPT = "$ProfileTranscriptsPath\PSLOG_{0:dd-MM-yyyy}.txt" -f (Get-Date)
 	Start-Transcript -Append
 }
 
@@ -64,7 +64,7 @@ function Install-MSOnlineModules {
 
     # Microsoft Online Services (Sign-In Assistant)
     if ($Installed.Name -notcontains "Microsoft Online Services Sign-in Assistant") {
-        
+
         #  Not Installed - Check we have the Installers Locally..
         $DownloadUrl = "http://download.microsoft.com/download/5/0/1/5017D39B-8E29-48C8-91A8-8D0E4968E6D4/en/msoidcli_64.msi"
         $destination = "$($env:Home)\Documents\WindowsPowerShell\Installs\MSOnline"
@@ -76,13 +76,13 @@ function Install-MSOnlineModules {
             Start-BitsTransfer -Source $DownloadUrl -Description "Microsoft Online services" -Destination $destination -DisplayName "Microsoft Online Services"
         }
         Write-Output "Installing: Microsoft Online Services Module"
-        Start-Process -Wait -FilePath msiexec.exe -ArgumentList "/i $destination\$(Split-Path $DownloadUrl -Leaf) /quiet /passive"
-    } 
 
+        Start-Process -Wait -FilePath msiexec.exe -ArgumentList "/i $destination\$(Split-Path $DownloadUrl -Leaf) /quiet /passive"
+    }
 
     # Azure Active Directory
     if ($Installed.Name -notcontains "Windows Azure Active Directory Module for Windows PowerShell") {
-        
+
         #  Not Installed - Check we have the Installers Locally..
         $DownloadUrl = "http://go.microsoft.com/fwlink/p/?linkid=236297"
         $destination = "$($env:Home)\Documents\WindowsPowerShell\Installs\AzureAD"
@@ -99,7 +99,7 @@ function Install-MSOnlineModules {
 
 
     # Azure PowerShell
-    if ($Installed.Name -notcontains "*Microsoft Azure PowerShell*" ) { 
+    if ($Installed.Name -notcontains "*Microsoft Azure PowerShell*" ) {
 
         #  Not Installed - Check we have the Installers Locally..
         $DownloadURL = 'https://github.com/Azure/azure-powershell/releases/download/0.9.4-June2015/azure-powershell.0.9.4.msi'
@@ -114,7 +114,7 @@ function Install-MSOnlineModules {
         Write-Output "Installing: Windows Azure PowerShell Module"
         Start-Process -Wait -FilePath msiexec.exe -ArgumentList "/i $destination\$(Split-Path $DownloadUrl -Leaf) /quiet /passive"
     }
-   
+
 }
 
 ## SUPPORT FUNCTIONS ##########################################################
@@ -154,8 +154,8 @@ function Set-WindowWidth([int]$preferredWidth)
 				$current.width=$preferredWidth
 				$host.ui.rawui.BufferSize=$current
 			}
-   
-    
+
+
 			# setting window size. As we are well within max limit, it won't throw exception.
 			$current=$host.ui.rawui.WindowSize
 			if ($current.width -lt $preferredWidth)
@@ -164,8 +164,8 @@ function Set-WindowWidth([int]$preferredWidth)
 				$host.ui.rawui.WindowSize=$current
 			}
 		}
-		$host.ui.rawui.BufferSize.Height = 5000 
-		$host.ui.rawui.BackgroundColor = "Black"                              
+		$host.ui.rawui.BufferSize.Height = 5000
+		$host.ui.rawui.BackgroundColor = "Black"
 		clear-host
 	}
 
@@ -175,10 +175,10 @@ function Set-WindowWidth([int]$preferredWidth)
 function Write-ColorOutput
 {
 	param (
-		[string]$message,  
+		[string]$message,
 		[string]$ForegroundColor = $host.UI.RawUI.ForegroundColor
 	)
-	
+
     # save the current color
     $currentForegroundColor = $host.UI.RawUI.ForegroundColor
 
@@ -186,7 +186,7 @@ function Write-ColorOutput
     $host.UI.RawUI.ForegroundColor = $ForegroundColor
 
     Write-Output $message
-    
+
     # restore the original color
     $host.UI.RawUI.ForegroundColor = $currentForegroundColor
 }
@@ -199,12 +199,12 @@ Function Connect-PSSession {
 		[string]$PSURI,
 		[String]$ConfigurationName
 	)
-	
+
 	process {
 		$ServerList = ( $ServerList ).Split(",;")
 		For ( $i = 0 ; -not $ServerSession -and $i -lt $ServerList.Count ; $i++ )
 		{
-			$targetServer = $ServerList[$i] 
+			$targetServer = $ServerList[$i]
 			write-verbose ("Attempting to connect to server $targetServer");
 			$ServerSession = New-PSSession  -ConnectionURI     "http://$targetServer/$PSURI" `
 										-ConfigurationName $ConfigurationName `
@@ -216,16 +216,16 @@ Function Connect-PSSession {
 			#  Importing PSSession with Exchange server to use Exchange server commands
 			$Import = Import-PSSession -Session $ServerSession -AllowClobber -Verbose:$False
 		}
-		
+
 		return $Import
 	}
 }
-	
+
 $ExchangeServerList = "bil-exc10-02.corpnet.liox.org;bil-exc10-03.corpnet.liox.org"
 $SkypeServerList = "bil-exc10-02.corpnet.liox.org;bil-exc10-03.corpnet.liox.org"
 
 #Import-Module ActiveDirectory
-#	
+#
 #Connect-PSSession -ServerList $SkypeServerList -PSURI "OcsPowershell/" -ConfigurationName "Microsoft.Lync"
 #Connect-PSSession -ServerList $ExchangeServerList -PSURI "powershell/" -ConfigurationName "Microsoft.Exchange" -verbose
 #Set-Item -Path WSMan:\localhost\Client\TrustedHosts -Value "Computer1,Computer2"
@@ -243,7 +243,7 @@ Function Connect-MSOL
         Write-Host "Couldn't connect to Azure AD. Please speak to your Administrator." -ForegroundColor Red
     }
 }
- 
+
 Function Connect-EOL
 {
 	$global:SessionEOL = New-PSSession -ConfigurationName Microsoft.Exchange `
@@ -251,11 +251,11 @@ Function Connect-EOL
 							 -Credential $MSOLCreds `
 							 -Authentication Basic `
 							 -AllowRedirection
-    
+
     Import-PSSession $SessionEOL –AllowClobber
-	
+
 	Register-EngineEvent PowerShell.Exiting -Action { Remove-PSSession $SessionEOL } | out-null
-	
+
 	return $SessionEOL
 }
 
@@ -289,13 +289,13 @@ function global:prompt {
 		# Reset color, which can be messed up by Enable-GitColors
 		$Host.UI.RawUI.ForegroundColor = $GitPromptSettings.DefaultForegroundColor
 	}
-	
+
     Write-Host($pwd.ProviderPath) -nonewline
 
 	if ($GitPromptSettings) {
 		Write-VcsStatus
 	}
-	
+
     $global:LASTEXITCODE = $realLASTEXITCODE
     return "> "
 }
@@ -331,13 +331,13 @@ function global:prompt {
 		$GitPromptSettings.IndexBackgroundColor    = [ConsoleColor]::Black
 		$GitPromptSettings.BeforeIndexBackgroundColor   = [ConsoleColor]::Black
 	}
-	
+
     Write-Host($pwd.ProviderPath) -nonewline
 
 	if ($GitPromptSettings) {
 		Write-VcsStatus
 	}
-	
+
     $global:LASTEXITCODE = $realLASTEXITCODE
     return "> "
 }
@@ -346,12 +346,9 @@ function global:prompt {
 
 ## DISPLAY BANNER ############################################################
 
+cd ~
 Display-Banner
 $hostname = Hostname
 $consoleInfo = "PowerShell " + $PSVersionTable.PSVersion + " hosted on " + $hostName + ", running Windows Build " + $PSVersionTable.BuildVersion + " using CLR " + $PSVersionTable.CLRVersion
-Write-ColorOutput -Message $consoleInfo -ForegroundColor Yellow 
+Write-ColorOutput -Message $consoleInfo -ForegroundColor Yellow
 write-output " "
-
-
-
-
