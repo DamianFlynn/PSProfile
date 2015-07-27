@@ -346,6 +346,9 @@ function global:prompt {
 
 ## DISPLAY BANNER ############################################################
 
+git config --global user.name "Damian Flynn"
+git config --global user.email info@damianflynn.com
+
 cd ~
 Display-Banner
 $hostname = Hostname
