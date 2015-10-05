@@ -222,12 +222,12 @@ Function Connect-PSSession {
 }
 
 $ExchangeServerList = "bil-exc10-02.corpnet.liox.org;bil-exc10-03.corpnet.liox.org"
-$SkypeServerList = "bil-exc10-02.corpnet.liox.org;bil-exc10-03.corpnet.liox.org"
+$SkypeServerList = "bil-ls-fe13.corpnet.liox.org;bil-ls-fs14.corpnet.liox.org"
 
 #Import-Module ActiveDirectory
 #
-#Connect-PSSession -ServerList $SkypeServerList -PSURI "OcsPowershell/" -ConfigurationName "Microsoft.Lync"
-#Connect-PSSession -ServerList $ExchangeServerList -PSURI "powershell/" -ConfigurationName "Microsoft.Exchange" -verbose
+Function Connect-Lync     { Connect-PSSession -ServerList $SkypeServerList -PSURI "OcsPowershell/" -ConfigurationName "Microsoft.Lync" -verbose }
+Function Connect-Exchange { Connect-PSSession -ServerList $ExchangeServerList -PSURI "powershell/" -ConfigurationName "Microsoft.Exchange" -verbose }
 #Set-Item -Path WSMan:\localhost\Client\TrustedHosts -Value "Computer1,Computer2"
 
 ## AZURE CONNECTIONS ##########################################################
@@ -342,6 +342,15 @@ function global:prompt {
     return "> "
 }
 
+
+## SMA Local Development ####################################################
+
+function Register-SMAPSModules {
+   $SMAModulePath = "C:\WorkBench\OneDrive\Source\diginerve\SMA\PowerShellModules\Dev"
+   $env:PSModulePath = "$SMAModulePath;$env:PSModulePath"
+}
+
+Register-SMAPSModules
 
 
 ## DISPLAY BANNER ############################################################
