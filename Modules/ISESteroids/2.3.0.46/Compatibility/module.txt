@@ -1,0 +1,6 @@
+Module "{1}" required.
+
+"{0}" is not a core PowerShell command.
+
+Module location:
+{2}

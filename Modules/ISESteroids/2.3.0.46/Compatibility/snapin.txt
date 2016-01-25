@@ -1,0 +1,8 @@
+Snap-In "{1}" required.
+
+"{0}" is not a core PowerShell command. 
+
+Run "Get-PSSnapin -Registered" to list available snap-ins.
+Load required snapins manually:
+
+Add-PSSnapin -Name "{1}" 

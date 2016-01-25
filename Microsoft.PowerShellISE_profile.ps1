@@ -293,5 +293,39 @@ Write-ColorOutput -Message $consoleInfo -ForegroundColor Yellow
 write-output " "
 
 
+$Global:AutomationWorkspace = @{
+    'SCOrchDev' = @{
+        'Workspace' = 'C:\GIT\SCOrchDev'
+        'ModulePath' = 'PowerShellModules'
+        'GlobalPath' = 'Globals'
+        'LocalPowerShellModulePath' = 'LocalPowerShellModules'
+        'RunbookPath' = 'Runbooks'
+    }
+    'LIOX' = @{
+        'Workspace' = 'C:\GIT\liox'
+        'ModulePath' = 'PowerShellModules'
+        'GlobalPath' = 'Globals'
+        'LocalPowerShellModulePath' = 'LocalPowerShellModules'
+        'RunbookPath' = 'Runbooks'
+    }
+}
 
 
+Foreach($_AutomationWorkspace in $Global:AutomationWorkspace.Keys)
+{
+
+    $PowerShellModulePath = "$($Global:AutomationWorkspace.$_AutomationWorkspace.Workspace)\$($Global:AutomationWorkspace.$_AutomationWorkspace.ModulePath)"
+    $LocalPowerShellModulePath = "$($Global:AutomationWorkspace.$_AutomationWorkspace.Workspace)\$($Global:AutomationWorkspace.$_AutomationWorkspace.LocalPowerShellModulePath)"
+
+    if(Test-Path -Path $PowerShellModulePath) { $env:PSModulePath = "$PowerShellModulePath;$env:PSModulePath" }
+    if(Test-Path -Path $LocalPowerShellModulePath) { $env:PSModulePath = "$LocalPowerShellModulePath;$env:PSModulePath" }
+}
+
+$env:LocalAuthoring = $true
+$Global:AutomationDefaultWorkspace = 'SCOrchDev'
+
+# Set up debugging
+$VerbosePreference = 'Continue'
+$DebugPreference = 'Continue'
+
+Import-Module PsISEProjectExplorer

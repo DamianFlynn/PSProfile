@@ -1,0 +1,2 @@
+﻿Remove Whitespace before opening bracket
+When you access an array, you use brackets to specify the element to select. These brackets must follow the expression immediately. Do not add whitespace. To resolve this problem, remove the whitespace between the expression and the opening bracket.

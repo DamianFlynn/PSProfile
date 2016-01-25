@@ -99,6 +99,16 @@ function Install-MSOnlineModules {
 
 
     # Azure PowerShell
+    # Play with using the PS Gallery to add the module for Azure PowerShell
+    Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+    Try {
+      Update-Module -Name Azure
+    }
+
+    Catch {
+      Install-Module -Name Azure
+    }
+
     if ($Installed.Name -notcontains "*Microsoft Azure PowerShell*" ) {
 
         #  Not Installed - Check we have the Installers Locally..
