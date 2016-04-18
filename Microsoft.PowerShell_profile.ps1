@@ -240,6 +240,8 @@ $SkypeServerList = "bil-ls-fe13.corpnet.liox.org;bil-ls-fs14.corpnet.liox.org"
 #
 Function Connect-Lync     { Connect-PSSession -ServerList $SkypeServerList -PSURI "OcsPowershell/" -ConfigurationName "Microsoft.Lync" -verbose }
 Function Connect-Exchange { Connect-PSSession -ServerList $ExchangeServerList -PSURI "powershell/" -ConfigurationName "Microsoft.Exchange" -verbose }
+
+
 #Set-Item -Path WSMan:\localhost\Client\TrustedHosts -Value "Computer1,Computer2"
 
 ## AZURE CONNECTIONS ##########################################################
@@ -256,7 +258,7 @@ Function Connect-MSOL
     }
 }
 
-Function Connect-EOL
+Function Connect-O365
 {
 	$global:SessionEOL = New-PSSession -ConfigurationName Microsoft.Exchange `
 							 -ConnectionUri "https://outlook.office365.com/powershell-liveid/" `
