@@ -20,7 +20,7 @@ function Load-myCredentials {
 
 	If (!(test-path $ProfileSettingsPath\ps_creds_O365.xml)) {
 		write-output "Please provide your Office 365 Credentials"
-		Get-Credential dpfadmin@lionbridge.onmicrosoft.com | Export-Clixml $ProfileSettingsPath\ps_creds_O365.xml
+		Get-Credential dpfadmin@lionbridge.onmicrosoft.com -message "Please provide your Office 365 Credentials"| Export-Clixml $ProfileSettingsPath\ps_creds_O365.xml
 	}
 	$CredsXML = Import-Clixml $ProfileSettingsPath\ps_creds_O365.xml
 	$global:MSOLCreds = new-object -typename System.Management.Automation.PSCredential -argumentlist $CredsXML.UserName,$CredsXML.Password
@@ -28,7 +28,7 @@ function Load-myCredentials {
 
 	If (!(test-path $ProfileSettingsPath\ps_creds_OnPrem.xml)) {
 		Write-Output "Please provide your On-Premise Administrator Credentials"
-		Get-Credential dpfadmin@lionbridge.com | Export-Clixml $ProfileSettingsPath\ps_creds_OnPrem.xml
+		Get-Credential df.admin@lionbridge.com -Message "Please provide your On-Premise Administrator Credentials" | Export-Clixml $ProfileSettingsPath\ps_creds_OnPrem.xml
 	}
 	$CredsXML = Import-Clixml $ProfileSettingsPath\ps_creds_OnPrem.xml
 	$global:OnPremCreds = new-object -typename System.Management.Automation.PSCredential -argumentlist $CredsXML.UserName,$CredsXML.Password
@@ -81,6 +81,7 @@ function Install-MSOnlineModules {
     }
 
     # Azure Active Directory
+	# http://social.technet.microsoft.com/wiki/contents/articles/28552.microsoft-azure-active-directory-powershell-module-version-release-history.aspx
     if ($Installed.Name -notcontains "Windows Azure Active Directory Module for Windows PowerShell") {
 
         #  Not Installed - Check we have the Installers Locally..
@@ -112,6 +113,7 @@ function Install-MSOnlineModules {
     if ($Installed.Name -notcontains "*Microsoft Azure PowerShell*" ) {
 
         #  Not Installed - Check we have the Installers Locally..
+		# https://github.com/Azure/azure-powershell/releases
         $DownloadURL = 'https://github.com/Azure/azure-powershell/releases/download/0.9.4-June2015/azure-powershell.0.9.4.msi'
         $destination = "$($env:Home)\Documents\WindowsPowerShell\Installs\Azure"
 
