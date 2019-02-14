@@ -1,3 +1,0 @@
-﻿Add closing parenthesis
-A param() block encloses parameters in parenthesis.
-Make sure you add the closing parenthesis.

@@ -1,2 +1,0 @@
-The keyword "Class" supports creation of dynamic classes.
-Class support was introduced in PowerShell 5.

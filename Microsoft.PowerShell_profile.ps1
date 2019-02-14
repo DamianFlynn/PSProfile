@@ -8,138 +8,13 @@ if (! ( [Environment]::GetEnvironmentVariable("PSModulePath", "User") ) ) {
 $ProfileSettingsPath = $PROFILE.Substring(0,$PROFILE.IndexOf('\Microsoft.')) + "\settings"
 $ProfileTranscriptsPath = $PROFILE.Substring(0,$PROFILE.IndexOf('\Microsoft.')) + "\transcripts"
 
-## CREDENTIALS ################################################################
-
-function Load-myCredentials {
-	#Enable Profile Settings Folder
-
-	if (!(test-path $ProfileSettingsPath)) {
-		write-output ("Create folders to store settings to")
-		mkdir $ProfileSettingsPath | out-null
-	}
-
-	If (!(test-path $ProfileSettingsPath\ps_creds_O365.xml)) {
-		write-output "Please provide your Office 365 Credentials"
-		Get-Credential dpfadmin@lionbridge.onmicrosoft.com -message "Please provide your Office 365 Credentials"| Export-Clixml $ProfileSettingsPath\ps_creds_O365.xml
-	}
-	$CredsXML = Import-Clixml $ProfileSettingsPath\ps_creds_O365.xml
-	$global:MSOLCreds = new-object -typename System.Management.Automation.PSCredential -argumentlist $CredsXML.UserName,$CredsXML.Password
-
-
-	If (!(test-path $ProfileSettingsPath\ps_creds_OnPrem.xml)) {
-		Write-Output "Please provide your On-Premise Administrator Credentials"
-		Get-Credential df.admin@lionbridge.com -Message "Please provide your On-Premise Administrator Credentials" | Export-Clixml $ProfileSettingsPath\ps_creds_OnPrem.xml
-	}
-	$CredsXML = Import-Clixml $ProfileSettingsPath\ps_creds_OnPrem.xml
-	$global:OnPremCreds = new-object -typename System.Management.Automation.PSCredential -argumentlist $CredsXML.UserName,$CredsXML.Password
-}
-
-## HISTORY ####################################################################
-
-Function Load-myHistory {
-	Register-EngineEvent PowerShell.Exiting -Action { Get-History | Export-Clixml $ProfileSettingsPath\.ps_history } | out-null
-	if (Test-path $ProfileSettingsPath\.ps_history) { Import-Clixml $ProfileSettingsPath\.ps_history | Add-History }
-}
-
-## TRANSCRIPTS ################################################################
-
-function Save-Transcript {
-	if (!(test-path $ProfileTranscriptsPath)) {
-		write-output ("Create folders to store transcripts to")
-		mkdir $ProfileTranscriptsPath | out-null
-	}
-
-	$global:TRANSCRIPT = "$ProfileTranscriptsPath\PSLOG_{0:dd-MM-yyyy}.txt" -f (Get-Date)
-	Start-Transcript -Append
-}
 
 ## MODULES ####################################################################
 
 
 
-function Install-MSOnlineModules {
-
-    # Check if the Modules are Currently Installed
-    $Installed = Get-WmiObject -class Win32_Product | sort-object name | select name, version, vendor
-
-    # Microsoft Online Services (Sign-In Assistant)
-    if ($Installed.Name -notcontains "Microsoft Online Services Sign-in Assistant") {
-
-        #  Not Installed - Check we have the Installers Locally..
-        $DownloadUrl = "http://download.microsoft.com/download/5/0/1/5017D39B-8E29-48C8-91A8-8D0E4968E6D4/en/msoidcli_64.msi"
-        $destination = "$($env:Home)\Documents\WindowsPowerShell\Installs\MSOnline"
-
-        if (!(Test-Path "$destination\msoidcli_64.msi")) {
-            #  Not Currently Local - Download the modules
-            Write-Output "Downloading: Microsoft Online Services Module"
-            if (!(Test-Path "$destination")) {mkdir $destination }
-            Start-BitsTransfer -Source $DownloadUrl -Description "Microsoft Online services" -Destination $destination -DisplayName "Microsoft Online Services"
-        }
-        Write-Output "Installing: Microsoft Online Services Module"
-
-        Start-Process -Wait -FilePath msiexec.exe -ArgumentList "/i $destination\$(Split-Path $DownloadUrl -Leaf) /quiet /passive"
-    }
-
-    # Azure Active Directory
-	# http://social.technet.microsoft.com/wiki/contents/articles/28552.microsoft-azure-active-directory-powershell-module-version-release-history.aspx
-    if ($Installed.Name -notcontains "Windows Azure Active Directory Module for Windows PowerShell") {
-
-        #  Not Installed - Check we have the Installers Locally..
-        $DownloadUrl = "http://go.microsoft.com/fwlink/p/?linkid=236297"
-        $destination = "$($env:Home)\Documents\WindowsPowerShell\Installs\AzureAD"
-
-        if (!(Test-Path "$destination\AdministrationConfig-en.msi")) {
-            #  Not Currently Local - Download the modules
-            Write-Output "Downloading: Windows Azure Active Directory Module"
-            if (!(Test-Path "$destination")) {mkdir $destination }
-            Start-BitsTransfer -Source $DownloadUrl -Description "Microsoft Online services" -Destination $destination -DisplayName "Windows Azure Active Directory"
-        }
-        Write-Output "Installing: Windows Azure Active Directory Module"
-        Start-Process -Wait -FilePath msiexec.exe -ArgumentList "/i $destination\$(Split-Path $DownloadUrl -Leaf) /quiet /passive"
-    }
-
-
-    # Azure PowerShell
-    # Play with using the PS Gallery to add the module for Azure PowerShell
-    Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
-    Try {
-      Update-Module -Name Azure
-    }
-
-    Catch {
-      Install-Module -Name Azure
-    }
-
-    if ($Installed.Name -notcontains "*Microsoft Azure PowerShell*" ) {
-
-        #  Not Installed - Check we have the Installers Locally..
-		# https://github.com/Azure/azure-powershell/releases
-        $DownloadURL = 'https://github.com/Azure/azure-powershell/releases/download/0.9.4-June2015/azure-powershell.0.9.4.msi'
-        $destination = "$($env:Home)\Documents\WindowsPowerShell\Installs\Azure"
-
-        if (!(Test-Path "$destination\azure-powershell.0.9.4.msi")) {
-            #  Not Currently Local - Download the modules
-            Write-Output "Downloading: Windows Azure PowerShell Module"
-            if (!(Test-Path "$destination")) {mkdir $destination }
-            Start-BitsTransfer -Source $DownloadURL -Description "Windows Azure Powershell" -Destination $destination -DisplayName "Windows Azure PowerShell"
-        }
-        Write-Output "Installing: Windows Azure PowerShell Module"
-        Start-Process -Wait -FilePath msiexec.exe -ArgumentList "/i $destination\$(Split-Path $DownloadUrl -Leaf) /quiet /passive"
-    }
-
-}
-
 ## SUPPORT FUNCTIONS ##########################################################
 
-function Check-LocalVersion
-{
-    $gitLocalRev = git rev-parse HEAD
-    $gitLocalBranch = (git symbolic-ref -q HEAD).Replace("refs/heads/","")
-    $gitRemoteRev = git rev-parse --verify --quite "@{upstream}"
-    $gitDifferences = git rev-list --left-right "@{upstream}"...HEAD
-
-    Write-Host ("Running $($GitStatus.Branch) branch")
-}
 
 function elevate-process
 {
@@ -150,39 +25,6 @@ function elevate-process
 	$psi.WorkingDirectory = get-location;
 	[System.Diagnostics.Process]::Start($psi);
 }
-
-function Set-WindowWidth([int]$preferredWidth)
-{
-	if ($host.name -eq "ConsoleHost") {
-		[int]$maxAllowedWindowWidth = $host.ui.rawui.MaxPhysicalWindowSize.Width
-		if ($preferredWidth -lt $maxAllowedWindowWidth)
-		{
-			# first, buffer size has to be set to windowsize or more
-			# this operation does not usually fail
-			$current=$host.ui.rawui.BufferSize
-			$bufferWidth = $current.width
-			if ($bufferWidth -lt $preferredWidth)
-			{
-				$current.width=$preferredWidth
-				$host.ui.rawui.BufferSize=$current
-			}
-
-
-			# setting window size. As we are well within max limit, it won't throw exception.
-			$current=$host.ui.rawui.WindowSize
-			if ($current.width -lt $preferredWidth)
-			{
-				$current.width=$preferredWidth
-				$host.ui.rawui.WindowSize=$current
-			}
-		}
-		$host.ui.rawui.BufferSize.Height = 5000
-		$host.ui.rawui.BackgroundColor = "Black"
-		clear-host
-	}
-
-}
-
 
 function Write-ColorOutput
 {
@@ -203,77 +45,6 @@ function Write-ColorOutput
     $host.UI.RawUI.ForegroundColor = $currentForegroundColor
 }
 
-## REMOTE POWERSHELL SESSIONS #################################################
-
-Function Connect-PSSession {
-	param (
-		[string]$ServerList,
-		[string]$PSURI,
-		[String]$ConfigurationName
-	)
-
-	process {
-		$ServerList = ( $ServerList ).Split(",;")
-		For ( $i = 0 ; -not $ServerSession -and $i -lt $ServerList.Count ; $i++ )
-		{
-			$targetServer = $ServerList[$i]
-			write-verbose ("Attempting to connect to server $targetServer");
-			$ServerSession = New-PSSession  -ConnectionURI     "http://$targetServer/$PSURI" `
-										-ConfigurationName $ConfigurationName `
-										-ErrorAction       Continue
-		}
-		If ( -not $ServerSession ) {
-			throw "Could not connect a new PSSession to any $PSURI servers."
-		} else {
-			#  Importing PSSession with Exchange server to use Exchange server commands
-			$Import = Import-PSSession -Session $ServerSession -AllowClobber -Verbose:$False
-		}
-
-		return $Import
-	}
-}
-
-$ExchangeServerList = "bil-exc10-02.corpnet.liox.org;bil-exc10-03.corpnet.liox.org"
-$SkypeServerList = "bil-ls-fe13.corpnet.liox.org;bil-ls-fs14.corpnet.liox.org"
-
-#Import-Module ActiveDirectory
-#
-Function Connect-Lync     { Connect-PSSession -ServerList $SkypeServerList -PSURI "OcsPowershell/" -ConfigurationName "Microsoft.Lync" -verbose }
-Function Connect-Exchange { Connect-PSSession -ServerList $ExchangeServerList -PSURI "powershell/" -ConfigurationName "Microsoft.Exchange" -verbose }
-
-
-#Set-Item -Path WSMan:\localhost\Client\TrustedHosts -Value "Computer1,Computer2"
-
-## AZURE CONNECTIONS ##########################################################
-
-Function Connect-MSOL
-{
-    Try
-    {
-        Connect-MsolService -Credential $global:MSOLCreds
-    }
-    Catch
-    {
-        Write-Host "Couldn't connect to Azure AD. Please speak to your Administrator." -ForegroundColor Red
-    }
-}
-
-Function Connect-O365
-{
-	$global:SessionEOL = New-PSSession -ConfigurationName Microsoft.Exchange `
-							 -ConnectionUri "https://outlook.office365.com/powershell-liveid/" `
-							 -Credential $MSOLCreds `
-							 -Authentication Basic `
-							 -AllowRedirection
-
-    Import-PSSession $SessionEOL –AllowClobber
-
-	Register-EngineEvent PowerShell.Exiting -Action { Remove-PSSession $SessionEOL } | out-null
-
-	return $SessionEOL
-}
-
-
 
 function Display-Banner {
 	clear-host
@@ -287,85 +58,60 @@ function Display-Banner {
 	write-output "  "
 }
 
+
+## REGISTER PROVIDERS #########################################################
+
+Display-Banner
+
+$consoleInfo = "Please Wait... Checking and Installing Modules and Providers"
+Write-ColorOutput -Message $consoleInfo -ForegroundColor Yellow
+
+function Register-PSPackageProvider {
+    param(
+        [string]$Name,
+        [string]$MinimumVersion
+    )
+
+    if (Get-PackageProvider -ListAvailable -Name $Name) {
+        $info = Get-PackageProvider -Name $Name
+        Write-Host "Package Provider $Name, version $($info.version) registered"
+    } 
+    else {
+        Write-Host "Package Provier $Name is not registered, Installing.."
+        Install-PackageProvider -Name $Name -MinimumVersion $MinimumVersion -Force -Confirm:$False
+    }
+}
+
+
+Register-PSPackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
+
+## DEFINE PROMPT #############################################################
+
+function Import-PSModule {
+    param([string]$Name)
+
+    if (Get-Module -ListAvailable -Name $Name) {
+        Write-Host "Module $Name exists"
+        import-module -name $Name
+    } 
+    else {
+        Write-Host "Module $Name does not exist, Installing.."
+        Install-Module -Name $Name -Force -Confirm:$False
+    }
+}
+
+import-psmodule -name posh-git
+Import-psModule -Name Get-ChildItemColor
+Import-psModule -Name oh-my-posh
+
+Set-Theme agnoster
+
 ## SET SOME ALIASES ##########################################################
 
-set-Alias npp          "C:\Program Files (x86)\Notepad++\notepad++.exe"
-set-alias edit-profile "npp $profile"
+set-alias edit-profile "code $profile"
 set-alias sudo         elevate-process
-
-
-## DEFINE PROMPT #############################################################
-
-function global:prompt {
-    $realLASTEXITCODE = $LASTEXITCODE
-
-	if ($GitPromptSettings) {
-		# Reset color, which can be messed up by Enable-GitColors
-		$Host.UI.RawUI.ForegroundColor = $GitPromptSettings.DefaultForegroundColor
-	}
-
-    Write-Host($pwd.ProviderPath) -nonewline
-
-	if ($GitPromptSettings) {
-		Write-VcsStatus
-	}
-
-    $global:LASTEXITCODE = $realLASTEXITCODE
-    return "> "
-}
-
-## ENVIRONMENT MODULES ########################################################
-
-Set-WindowWidth -preferredWidth 150
-Load-myCredentials
-Load-myHistory
-Save-Transcript
-
-## DEFINE PROMPT #############################################################
-
-import-module posh-git
-import-module posh-gitdir
-Enable-GitColors
-
-function global:prompt {
-    $realLASTEXITCODE = $LASTEXITCODE
-
-	if ($GitPromptSettings) {
-		# Reset color, which can be messed up by Enable-GitColors
-		$Host.UI.RawUI.ForegroundColor = $GitPromptSettings.DefaultForegroundColor
-		$GitPromptSettings.AfterBackgroundColor  = [ConsoleColor]::Black
-		$GitPromptSettings.DelimBackgroundColor    = [ConsoleColor]::Black
-		$GitPromptSettings.UntrackedBackgroundColor   = [ConsoleColor]::Black
-		$GitPromptSettings.BranchAheadBackgroundColor   = [ConsoleColor]::Black
-		$GitPromptSettings.BranchBackgroundColor   = [ConsoleColor]::Black
-		$GitPromptSettings.BranchBehindAndAheadBackgroundColor   = [ConsoleColor]::Black
-		$GitPromptSettings.WorkingBackgroundColor   = [ConsoleColor]::Black
-		$GitPromptSettings.BranchBehindBackgroundColor   = [ConsoleColor]::Black
-		$GitPromptSettings.BeforeBackgroundColor    = [ConsoleColor]::Black
-		$GitPromptSettings.IndexBackgroundColor    = [ConsoleColor]::Black
-		$GitPromptSettings.BeforeIndexBackgroundColor   = [ConsoleColor]::Black
-	}
-
-    Write-Host($pwd.ProviderPath) -nonewline
-
-	if ($GitPromptSettings) {
-		Write-VcsStatus
-	}
-
-    $global:LASTEXITCODE = $realLASTEXITCODE
-    return "> "
-}
-
-
-## SMA Local Development ####################################################
-
-function Register-SMAPSModules {
-   $SMAModulePath = "C:\WorkBench\OneDrive\Source\diginerve\SMA\PowerShellModules\Dev"
-   $env:PSModulePath = "$SMAModulePath;$env:PSModulePath"
-}
-
-Register-SMAPSModules
-
+#Set-Alias l Get-ChildItemColor -Option AllScope
+#Set-Alias ls Get-ChildItemColorFormatWide -Option AllScope
 
 ## DISPLAY BANNER ############################################################
 

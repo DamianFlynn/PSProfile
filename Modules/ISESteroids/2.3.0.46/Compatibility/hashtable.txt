@@ -1,2 +1,0 @@
-Ordered hashtables were introduced in PowerShell 3.
-Remove "[Ordered]" to use non-ordered hashtables instead.

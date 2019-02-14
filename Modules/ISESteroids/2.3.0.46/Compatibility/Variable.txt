@@ -1,2 +1,0 @@
-Automatic variables are predefined by PowerShell. 
-This variable was introduced in PowerShell Version {0}.
