@@ -100,9 +100,9 @@ function Import-PSModule {
     }
 }
 
-import-psmodule -name posh-git
-Import-psModule -Name Get-ChildItemColor
-Import-psModule -Name oh-my-posh
+Import-PSModule -name posh-git
+Import-PSModule -Name Get-ChildItemColor
+Import-PSModule -Name oh-my-posh
 
 Set-Theme agnoster
 
