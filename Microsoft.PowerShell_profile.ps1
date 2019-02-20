@@ -88,21 +88,40 @@ Register-PSPackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
 ## DEFINE PROMPT #############################################################
 
 function Import-PSModule {
-    param([string]$Name)
+    param(
+        [string]$Name,
+        [string]$Version
+    )
 
-    if (Get-Module -ListAvailable -Name $Name) {
+    $module = Get-Module -ListAvailable -Name $Name 
+    if ($module) {
         Write-Host "Module $Name exists"
+        if ($module.name -eq "pester" -and $module.Version.ToString() -lt $Version)
+        {
+            $pester = "c:\Program Files\WindowsPowerShell\Modules\Pester"
+            takeown /F $pester /A /R
+            icacls $pester /reset
+            icacls $pester /grant Administrators:'F' /inheritance:d /T
+            Remove-Item -Path $pester -Recurse -Force -Confirm:$false
+            Install-Module -name pester -MinimumVersion $Version
+        }
         import-module -name $Name
     } 
     else {
         Write-Host "Module $Name does not exist, Installing.."
-        Install-Module -Name $Name -Force -Confirm:$False
+        if ($Version)
+        {
+            Install-Module -Name $Name -MinimumVersion $version -Force -Confirm:$False
+        } else {
+            Install-Module -Name $Name -Force -Confirm:$False
+        }
     }
 }
 
 import-psmodule -name posh-git
 Import-psModule -Name Get-ChildItemColor
 Import-psModule -Name oh-my-posh
+Import-PSModule -Name pester -Version "4.3.0"
 
 Set-Theme agnoster
 
