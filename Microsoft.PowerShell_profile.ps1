@@ -121,6 +121,11 @@ git config --global user.email info@damianflynn.com
 cd ~
 Display-Banner
 $hostname = Hostname
+$time = Get-Date
+
 $consoleInfo = "PowerShell " + $PSVersionTable.PSVersion + " hosted on " + $hostName + ", running Windows Build " + $PSVersionTable.BuildVersion + " using CLR " + $PSVersionTable.CLRVersion
 Write-ColorOutput -Message $consoleInfo -ForegroundColor Yellow
+Write-Host "Session Started on $($time.ToLongDateString()) " -foregroundColor Yellow -NoNewLine
+Write-Host "$([char]9829) " -foregroundColor Red
+
 write-output " "
