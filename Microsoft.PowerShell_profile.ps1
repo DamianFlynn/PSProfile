@@ -137,7 +137,7 @@ set-alias sudo         elevate-process
 git config --global user.name "Damian Flynn"
 git config --global user.email info@damianflynn.com
 
-cd ~
+#cd ~
 Display-Banner
 $hostname = Hostname
 $consoleInfo = "PowerShell " + $PSVersionTable.PSVersion + " hosted on " + $hostName + ", running Windows Build " + $PSVersionTable.BuildVersion + " using CLR " + $PSVersionTable.CLRVersion
