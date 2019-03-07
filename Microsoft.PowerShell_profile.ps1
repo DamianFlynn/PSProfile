@@ -122,6 +122,8 @@ import-psmodule -name posh-git
 Import-psModule -Name Get-ChildItemColor
 Import-psModule -Name oh-my-posh
 Import-PSModule -Name pester -Version "4.3.0"
+# Import-PSModule -Name az ## the asSK module is not yet compatiable [https://docs.microsoft.com/en-us/powershell/azure/uninstall-az-ps?view=azps-1.3.0]
+Import-PSModule -Name azSK
 
 Set-Theme agnoster
 
@@ -140,6 +142,11 @@ git config --global user.email info@damianflynn.com
 #cd ~
 Display-Banner
 $hostname = Hostname
+$time = Get-Date
+
 $consoleInfo = "PowerShell " + $PSVersionTable.PSVersion + " hosted on " + $hostName + ", running Windows Build " + $PSVersionTable.BuildVersion + " using CLR " + $PSVersionTable.CLRVersion
 Write-ColorOutput -Message $consoleInfo -ForegroundColor Yellow
+Write-Host "Session Started on $($time.ToLongDateString()) " -foregroundColor Yellow -NoNewLine
+Write-Host "$([char]9829) " -foregroundColor Red
+
 write-output " "
