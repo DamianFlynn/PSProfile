@@ -122,8 +122,9 @@ import-psmodule -name posh-git
 Import-psModule -Name Get-ChildItemColor
 Import-psModule -Name oh-my-posh
 Import-PSModule -Name pester -Version "4.3.0"
-# Import-PSModule -Name az ## the asSK module is not yet compatiable [https://docs.microsoft.com/en-us/powershell/azure/uninstall-az-ps?view=azps-1.3.0]
-Import-PSModule -Name azSK
+Import-PSModule -Name az ## the asSK module is not yet compatiable [https://docs.microsoft.com/en-us/powershell/azure/uninstall-az-ps?view=azps-1.3.0]
+#Import-PSModule -Name azSK
+Import-Module -Name az.Blueprint
 
 Set-Theme agnoster
 
@@ -139,7 +140,7 @@ set-alias sudo         elevate-process
 git config --global user.name "Damian Flynn"
 git config --global user.email info@damianflynn.com
 
-cd ~
+#cd ~
 Display-Banner
 $hostname = Hostname
 $time = Get-Date
