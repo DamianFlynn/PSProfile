@@ -61,15 +61,12 @@ function Display-Banner {
 
 Display-Banner
 
-$consoleInfo = "Please Wait... Checking and Installing Modules and Providers"
-Write-ColorOutput -Message $consoleInfo -ForegroundColor Yellow
-
 function Register-PSPackageProvider {
   param(
     [string]$Name,
     [string]$MinimumVersion
   )
-
+  
   if (Get-PackageProvider -ListAvailable -Name $Name) {
     $info = Get-PackageProvider -Name $Name
     Write-Host "Package Provider $Name, version $($info.version) registered"
@@ -80,22 +77,23 @@ function Register-PSPackageProvider {
   }
 }
 
-# Skipping as this will be refactored to use the same collection logic for speed
-#Register-PSPackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
+  
+$consoleInfo = "Please Wait... Checking and Installing Providers" 
+Write-ColorOutput -Message $consoleInfo -ForegroundColor Yellow
+Register-PSPackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
+
 
 ## DEFINE PROMPT #############################################################
-
-$moduleList = Get-Module -ListAvailable
 
 function Import-PSModule {
   param(
     [string]$Name,
     [string]$Version
   )
-
+  
   ## Check if the named module is in the collection of installed modules
   $index = ([Collections.Generic.List[Object]]($moduleList)).FindIndex( { $args[0].Name -eq $name } )
-
+  
   ## 
   if ($index -ne -1) {
     Write-Host "Module $Name exists"
@@ -124,7 +122,11 @@ function Import-PSModule {
     }
   }
 }
-
+  
+  
+$consoleInfo = "Please Wait... Checking and Installing Modules" 
+Write-ColorOutput -Message $consoleInfo -ForegroundColor Yellow
+$moduleList = Get-Module -ListAvailable
 
 import-psmodule -name posh-git
 Import-psModule -Name Get-ChildItemColor
@@ -134,7 +136,6 @@ Import-PSModule -Name az
 ## the asSK module is not yet compatiable [https://docs.microsoft.com/en-us/powershell/azure/uninstall-az-ps?view=azps-1.3.0]
 #Import-PSModule -Name azSK
 #Import-Module -Name az.Blueprint
-
 
 Set-Theme agnoster
 
