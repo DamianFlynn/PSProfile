@@ -11,6 +11,18 @@ $ProfileTranscriptsPath = $PROFILE.Substring(0, $PROFILE.IndexOf('\Microsoft.'))
 
 ## MODULES ####################################################################
 
+# Check if the profile has executed today, and if not, we will refresh the modules
+$refreshModules = $false
+if (!(test-path $profilePath\RefreshModules.flag)) {
+  Write-Output "No Flag - Refreshing Modules"
+  $refreshModules = $true
+  echo $null > $profilePath\RefreshModules.flag
+} elseif (!((gci $profilePath\RefreshModules.flag).lastwritetime -gt [datetime]::today)) {
+  Write-Output "Old Flag - Refreshing Modules"
+  $refreshModules = $true
+  (Get-ChildItem $profilePath\RefreshModules.flag).LastWriteTime = Get-Date
+} 
+
 
 
 ## SUPPORT FUNCTIONS ##########################################################
@@ -77,11 +89,11 @@ function Register-PSPackageProvider {
   }
 }
 
-  
-$consoleInfo = "Please Wait... Checking and Installing Providers" 
-Write-ColorOutput -Message $consoleInfo -ForegroundColor Yellow
-Register-PSPackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
-
+if ($refreshModules) {  
+  $consoleInfo = "Please Wait... Checking and Installing Providers" 
+  Write-ColorOutput -Message $consoleInfo -ForegroundColor Yellow
+  Register-PSPackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
+}
 
 ## DEFINE PROMPT #############################################################
 
@@ -123,19 +135,20 @@ function Import-PSModule {
   }
 }
   
-  
-$consoleInfo = "Please Wait... Checking and Installing Modules" 
-Write-ColorOutput -Message $consoleInfo -ForegroundColor Yellow
-$moduleList = Get-Module -ListAvailable
+if ($refreshModules) {   
+  $consoleInfo = "Please Wait... Checking and Installing Modules" 
+  Write-ColorOutput -Message $consoleInfo -ForegroundColor Yellow
+  $moduleList = Get-Module -ListAvailable
 
-import-psmodule -name posh-git
-Import-psModule -Name Get-ChildItemColor
-Import-psModule -Name oh-my-posh
-Import-PSModule -Name pester -Version "4.3.0"
-Import-PSModule -Name az 
-## the asSK module is not yet compatiable [https://docs.microsoft.com/en-us/powershell/azure/uninstall-az-ps?view=azps-1.3.0]
-#Import-PSModule -Name azSK
-#Import-Module -Name az.Blueprint
+  import-psmodule -name posh-git
+  Import-psModule -Name Get-ChildItemColor
+  Import-psModule -Name oh-my-posh
+  Import-PSModule -Name pester -Version "4.3.0"
+  Import-PSModule -Name az 
+  ## the asSK module is not yet compatiable [https://docs.microsoft.com/en-us/powershell/azure/uninstall-az-ps?view=azps-1.3.0]
+  #Import-PSModule -Name azSK
+  #Import-Module -Name az.Blueprint
+}
 
 Set-Theme agnoster
 
