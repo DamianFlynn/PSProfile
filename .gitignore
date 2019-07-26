@@ -1,3 +1,5 @@
 #Ignore Files
 settings/
 transcripts/
+Modules/
+RefreshModules.flag
