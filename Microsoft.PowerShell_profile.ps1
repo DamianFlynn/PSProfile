@@ -108,19 +108,21 @@ function Import-PSModule {
   
   ## 
   if ($index -ne -1) {
-    Write-Host "Module $Name exists"
-    if ($module.name -eq "pester" -and $module.Version.ToString() -lt $Version) {
+    $curModule = $moduleList[$index]
+    Write-Host "Module $($curModule.name) $($curModule.version.Tostring()) Found"
+    if ($name -eq "pester" -and $Version.Split(".")[0] -lt $curModule.version.Tostring().Split[0]) {
+      Write-Host "Upgrading $($curModule.name)..." 
       $pester = "c:\Program Files\WindowsPowerShell\Modules\Pester"
       takeown.exe /F $pester /A /R
       icacls.exe $pester /reset
       icacls.exe $pester /grant Administrators:'F' /inheritance:d /T
       Remove-Item -Path $pester -Recurse -Force -Confirm:$false
-      Install-Module -name pester -MinimumVersion $Version
+      Install-Module -name pester -MinimumVersion $Version -Force
     }
     Import-Module -name $Name
   } 
   else {
-    If ($Host.Name -eq 'Visual Studio Code Host') {
+    If ($Host.Name -eq 'ConsoleHost') {
       Write-Host "Module $Name does not exist, Installing.."
       if ($Version) {
         Install-Module -Name $Name -MinimumVersion $version -Force -Confirm:$False
@@ -150,7 +152,7 @@ if ($refreshModules) {
   #Import-Module -Name az.Blueprint
 }
 
-Set-Theme agnoster
+Set-Theme Paradox
 
 ## SET SOME ALIASES ##########################################################
 
