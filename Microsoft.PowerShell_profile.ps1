@@ -57,7 +57,7 @@ function Write-ColorOutput {
 
 
 function Display-Banner {
-  Clear-Host
+  #Clear-Host
   Write-Output "  "
   Write-Output "   ██╗ ██╗ ██████╗  █████╗ ███╗   ███╗██╗ █████╗ ███╗   ██╗        ███████╗██╗  ██╗   ██╗███╗   ██╗███╗   ██╗"
   Write-Output "  ████████╗██╔══██╗██╔══██╗████╗ ████║██║██╔══██╗████╗  ██║        ██╔════╝██║  ╚██╗ ██╔╝████╗  ██║████╗  ██║"
@@ -108,25 +108,30 @@ function Import-PSModule {
   
   ## 
   if ($index -ne -1) {
-    Write-Host "Module $Name exists"
-    if ($module.name -eq "pester" -and $module.Version.ToString() -lt $Version) {
-      $pester = "c:\Program Files\WindowsPowerShell\Modules\Pester"
-      takeown.exe /F $pester /A /R
-      icacls.exe $pester /reset
-      icacls.exe $pester /grant Administrators:'F' /inheritance:d /T
-      Remove-Item -Path $pester -Recurse -Force -Confirm:$false
-      Install-Module -name pester -MinimumVersion $Version
+    $curModule = $moduleList[$index]
+    Write-Host "Module $($curModule.name) $($curModule.version.Tostring()) Found"
+    if ($name -eq "pester")
+    {
+      if ($curModule.version.Tostring().Split(".")[0] -lt $Version.Split(".")[0]) {
+        Write-Host "Upgrading $($curModule.name)..." 
+        $pester = "c:\Program Files\WindowsPowerShell\Modules\Pester"
+        takeown.exe /F $pester /A /R
+        icacls.exe $pester /reset
+        icacls.exe $pester /grant Administrators:'F' /inheritance:d /T
+        Remove-Item -Path $pester -Recurse -Force -Confirm:$false
+        Install-Module -name pester -MinimumVersion $Version -Force
+      }
     }
     Import-Module -name $Name
   } 
   else {
-    If ($Host.Name -eq 'Visual Studio Code Host') {
+    If ($Host.Name -eq 'ConsoleHost') {
       Write-Host "Module $Name does not exist, Installing.."
       if ($Version) {
-        Install-Module -Name $Name -MinimumVersion $version -Force -Confirm:$False
+        Install-Module -Name $Name -MinimumVersion $version -AllowClobber -Force -Confirm:$False
       }
       else {
-        Install-Module -Name $Name -Force -Confirm:$False
+        Install-Module -Name $Name -Force -AllowClobber -Confirm:$False
       }
     }
     else {
@@ -138,7 +143,8 @@ function Import-PSModule {
 if ($refreshModules) {   
   $consoleInfo = "Please Wait... Checking and Installing Modules" 
   Write-ColorOutput -Message $consoleInfo -ForegroundColor Yellow
-  $moduleList = Get-Module -ListAvailable
+  # $moduleList = Get-Module -ListAvailable
+  $moduleList = Get-InstalledModule
 
   import-psmodule -name posh-git
   Import-psModule -Name Get-ChildItemColor
@@ -150,7 +156,7 @@ if ($refreshModules) {
   #Import-Module -Name az.Blueprint
 }
 
-Set-Theme agnoster
+Set-Theme Paradox
 
 ## SET SOME ALIASES ##########################################################
 
